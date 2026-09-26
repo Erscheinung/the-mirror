@@ -67,6 +67,8 @@ func track_event(event_type: String, properties := {}) -> void:
 
 
 func identify_user_email(user_id: String, email: String) -> void:
+	if not _is_enabled():
+		return
 	# JSON shape: https://posthog.com/docs/api/post-only-endpoints#identify
 	var data = {
 		API_KEY_KEY: api_key,
@@ -83,6 +85,8 @@ func identify_user_email(user_id: String, email: String) -> void:
 
 ## Send a single event to the Analytics (Posthog) service
 func _send_event(event: AnalyticsEvent) -> void:
+	if not _is_enabled():
+		return
 	var dupe = _get_formatted_single_event(event)
 
 	if _http_capture.get_http_client_status() == HTTPClient.STATUS_DISCONNECTED:
@@ -101,6 +105,11 @@ func _ready() -> void:
 	add_child(_http_batch)
 	_http_capture.request_completed.connect(_on_capture_request_complete)
 	_http_batch.request_completed.connect(_on_batch_request_complete)
+
+
+## An empty mirror/posthog_api_key disables analytics (self-hosted presets).
+func _is_enabled() -> bool:
+	return not str(api_key).is_empty()
 
 
 func _get_formatted_single_event(event: AnalyticsEvent) -> Dictionary:

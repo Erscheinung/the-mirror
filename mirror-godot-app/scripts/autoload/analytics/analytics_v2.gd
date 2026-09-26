@@ -36,6 +36,9 @@ func track_event(event_type: String, properties:={}) -> void:
 
 ## Send a single event to the Mixpanel Analytics service
 func _send_track_event(event: AnalyticsEvent, properties := {}) -> void:
+	# An empty mirror/mixpanel_api_key disables analytics (self-hosted presets).
+	if str(api_token).is_empty():
+		return
 	var version := Util.get_version_string()
 	var release := Util.get_release_name()
 	var standard_properties = {
