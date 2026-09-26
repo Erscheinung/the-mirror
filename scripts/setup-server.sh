@@ -9,7 +9,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SERVER="$ROOT/mirror-web-server"
 
-HOST_IP="${1:-$(tailscale ip -4 2>/dev/null | head -1 || true)}"
+TAILSCALE="$(command -v tailscale || echo /Applications/Tailscale.app/Contents/MacOS/Tailscale)"
+HOST_IP="${1:-$("$TAILSCALE" ip -4 2> /dev/null | head -1 || true)}"
 if [ -z "$HOST_IP" ]; then
 	echo "Could not get a Tailscale IP. Run 'tailscale up' (or pass the IP to use as the first argument)."
 	exit 1
@@ -80,4 +81,4 @@ npx --yes yarn@1.22.22 build
 
 echo
 echo "Setup done. Start the server with: scripts/start-server.sh"
-echo "Friends run: scripts/set-mirror-host.sh $HOST_IP join   (or set-mirror-host.ps1 on Windows)"
+echo "Friends run: ./setup-mac.sh or ./setup-linux.sh $HOST_IP  (Windows: setup-win.ps1 $HOST_IP)"

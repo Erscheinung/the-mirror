@@ -5,19 +5,9 @@ This fork runs Mirror Classic fully self-hosted for a small group on a [Tailscal
 - **Login** is handled by `mirror-web-server` itself. Users are stored in MongoDB and tokens are signed with `LOCAL_AUTH_SECRET`. Firebase is only used if you set `AUTH_PROVIDER=firebase`.
 - **One machine is the host.** It runs the web server (accounts, spaces, assets) and the game server for the space it opens. Everyone else joins that game server over Tailscale.
 
-### Which Godot do I open?
+### Quick start
 
-Use **the Mirror fork of Godot that you build with the scripts below** (it reports `4.3.1.rc.mirror`). Don't use stock Godot 4.3, 4.4 or 4.5. The project depends on engine modules that only exist in the fork (`TMSceneSync`, `JBody3D`/Jolt, etc.), so stock Godot fails with errors like `Could not resolve class "MirrorHttpClient"`. Opening the project in a newer Godot also rewrites project files, so don't do it even once.
-
-| OS | Build the editor (one time, ~10–20 min) | Result |
-| --- | --- | --- |
-| macOS (Apple Silicon) | `./setup-mac.sh` | `godot-engine/bin/MirrorGodot.app` |
-| Linux: Arch / Omarchy, Debian/Ubuntu, Fedora | `./setup-linux.sh` | `godot-engine/bin/godot.linuxbsd.editor.x86_64` |
-| Windows | `powershell -ExecutionPolicy Bypass -File setup-win.ps1` (requirements are at the top of `scripts/build-engine-windows.ps1`) | `godot-engine\bin\godot.windows.editor.x86_64.exe` |
-
-The scripts fetch the engine source (the `godot-engine` submodule pinned by this repo) and its module submodules, install build dependencies, and compile. Open the resulting editor, click **Import**, choose `mirror-godot-app/project.godot`, let it import, then close and reopen the editor once.
-
-### Everyone: get the code and join the tailnet
+Everyone clones the fork on the `dev` branch:
 
 ```sh
 git clone https://github.com/Erscheinung/the-mirror.git
@@ -25,42 +15,61 @@ cd the-mirror
 git checkout dev
 ```
 
-Install Tailscale and run `tailscale up` (or use the app). The host shares their machine with friends who are on other tailnets (Tailscale admin console → Machines → Share).
+Then run **one** setup command. It installs whatever is missing, builds the Mirror fork of Godot (about 10–20 minutes the first time) and configures the game. Rerunning it is safe.
 
-### Host: set up and start the server (macOS or Linux)
+| Who | macOS | Linux (Arch / Omarchy, Debian/Ubuntu, Fedora) | Windows (PowerShell) |
+| --- | --- | --- | --- |
+| **Friends** | `./setup-mac.sh` | `./setup-linux.sh` | `powershell -ExecutionPolicy Bypass -File setup-win.ps1` |
+| **Host** | `scripts/setup-host.sh` | `scripts/setup-host.sh` | not supported (host from macOS or Linux) |
 
-```sh
-scripts/setup-server.sh      # one time: MongoDB + Redis, Node 22, builds the server, writes mirror-web-server/.env
-scripts/start-server.sh      # every session; leave it running (port 9000)
-```
+After setup:
 
-- **macOS**: dependencies come from Homebrew. The script trusts MongoDB's official tap (`brew trust mongodb/brew`), which newer Homebrew requires.
-- **Linux**: MongoDB and Redis run as docker/podman containers, because MongoDB isn't in Arch's official repos. On Arch/Omarchy run `sudo pacman -S docker && sudo systemctl enable --now docker` first, and use Node 22 (`sudo pacman -S nodejs-lts-jod` or `mise use -g node@22`). The server doesn't run on Node 23+.
-- `setup-server.sh` detects your Tailscale IP, writes `mirror-web-server/.env` with freshly generated secrets, and switches your game to the **host** role. `.env` is gitignored. Keep it private and don't commit it.
-- On macOS, click **Allow** when the firewall asks about incoming connections for `node` (web server, TCP 9000) and Godot (game server, UDP 27015).
+| | macOS / Linux | Windows |
+| --- | --- | --- |
+| Host starts the server (every session; leave it running) | `scripts/start-server.sh` | n/a |
+| Play | `scripts/play.sh` | `scripts\play.ps1` |
+| Open the Godot editor | `scripts/play.sh --editor` | `scripts\play.ps1 -Editor` |
 
-Then open the project in the Mirror editor and press **Play** (F5):
+In the game, sign up or click **Join as Guest**. Accounts live on the host's server.
+- **The host** creates a space and opens it. A game server for that space starts on the host's machine.
+- **Friends** then open any space. With the join role, they're connected to the space the host has open, and everyone builds in it together in real time. The **Join by IP** panel (`<host-ip>:27015`) works too.
 
-1. Sign up (email and password are only stored on your server) or click **Join as Guest**.
-2. Create a space and open it. A headless game server for that space starts on your machine.
+### What the setup scripts install
 
-### Friends: join the host
+- **Friends** (`scripts/setup-friend.sh` / `.ps1`):
+  - Installs Tailscale and prompts you to log in.
+  - Installs the engine build tools:
+    - macOS: Xcode command line tools, Homebrew, cmake, scons.
+    - Linux: packages via pacman/apt/dnf.
+    - Windows: Git, Python, CMake, Ninja and Visual Studio 2022 C++ Build Tools, via winget.
+  - Builds the engine.
+  - Sets the **join** role for the host IP stored in `tailscale-join.cfg`. Pass a different IP as the first argument if needed.
+  - Imports the project's assets and checks that the host's server is reachable.
+- **Host** (`scripts/setup-host.sh`):
+  - Builds the engine the same way.
+  - Runs `scripts/setup-server.sh`, which:
+    - installs MongoDB, Redis and Node 22 (Homebrew on macOS; docker/podman containers for MongoDB and Redis on Linux);
+    - builds `mirror-web-server`;
+    - writes `mirror-web-server/.env` with freshly generated secrets for your Tailscale IP;
+    - sets the **host** role.
+  - `.env` is gitignored. Keep it private.
+  - Linux hosts: install docker first (Arch/Omarchy: `sudo pacman -S docker && sudo systemctl enable --now docker`) and use Node 22 (`sudo pacman -S nodejs-lts-jod` or `mise use -g node@22`). The server doesn't run on Node 23+.
+- **Tailscale access**: friends must be able to reach the host's machine. Either they join the host's tailnet, or the host shares the machine with them (Tailscale admin console → Machines → Share).
+- **macOS firewall**: on the host, click **Allow** when macOS asks about incoming connections for `node` (web server, TCP 9000) and Godot (game server, UDP 27015).
 
-```sh
-scripts/set-mirror-host.sh <host-tailscale-ip> join                                         # macOS / Linux
-powershell -ExecutionPolicy Bypass -File scripts\set-mirror-host.ps1 <host-tailscale-ip> join   # Windows
-```
+### Which Godot is this?
 
-Open the project in the Mirror editor, press **Play**, sign up or click **Join as Guest** (the account lives on the host's server), then open a space. With the **join** role, opening a space connects you to the game server the host has running, so you all build in the same world in real time. You can also type `<host-ip>:27015` into the **Join by IP** panel.
+The scripts build **the Mirror fork of Godot** (it reports `4.3.1.rc.mirror`) from the `godot-engine` submodule. Don't open the project in stock Godot 4.3, 4.4 or 4.5. It depends on engine modules that only exist in the fork (`TMSceneSync`, `JBody3D`/Jolt, etc.), so stock Godot fails with errors like `Could not resolve class "MirrorHttpClient"`. A newer Godot also rewrites project files when it opens them.
 
-`set-mirror-host.sh` copies a preset from `mirror-godot-app/addons/mirror_internal/env_configs/` (`tailscale-host.cfg` / `tailscale-join.cfg`) to `mirror-godot-app/override.cfg`. That file is gitignored, so each person's role stays local. You can also switch presets from the environment dropdown in the top-right of the editor.
+Your role (host or join) is stored in `mirror-godot-app/override.cfg`, which is gitignored and copied from `mirror-godot-app/addons/mirror_internal/env_configs/tailscale-{host,join}.cfg`. Switch it with `scripts/set-mirror-host.sh <ip> <host|join>` (or `.ps1`), or from the environment dropdown in the top-right of the editor.
 
 ### Working on this branch together
 
 - `git pull` to get each other's code changes. Rebuild the engine only when the `godot-engine` submodule commit changes.
 - Things you build in-game (spaces, objects, scripts, uploaded assets) are saved on the host's server (MongoDB and `mirror-web-server/localStorage`), not in git.
 - After pulling web server changes, the host reruns `scripts/setup-server.sh` (it keeps the existing `.env`) and restarts `scripts/start-server.sh`.
-- If the host's Tailscale IP changes, everyone reruns `set-mirror-host` with the new IP. The host also updates `ASSET_STORAGE_URL` in `.env`.
+- If the host's Tailscale IP changes, everyone reruns `set-mirror-host` with the new IP, and the host also updates `ASSET_STORAGE_URL` in `.env`. Commit the updated `tailscale-*.cfg` files so new friends get the right default.
+- The server stops when the host's machine restarts or the terminal running `start-server.sh` closes. Start it again with `scripts/start-server.sh`.
 
 ### Troubleshooting
 

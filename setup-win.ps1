@@ -1,2 +1,2 @@
-# The precompiled Windows editor is no longer hosted, so build the Mirror Godot fork from source.
-& (Join-Path $PSScriptRoot "scripts\build-engine-windows.ps1")
+# Friends on Windows: installs everything needed and builds the Mirror fork of Godot.
+& (Join-Path $PSScriptRoot "scripts\setup-friend.ps1") @args
