@@ -7,12 +7,11 @@ This fork runs Mirror Classic fully self-hosted for a small group on a [Tailscal
 
 ### Quick start
 
-Everyone clones the fork on the `dev` branch:
+Everyone clones the fork (`main` is the default branch):
 
 ```sh
 git clone https://github.com/Erscheinung/the-mirror.git
 cd the-mirror
-git checkout dev
 ```
 
 Then run **one** setup command. It installs whatever is missing, builds the Mirror fork of Godot (about 10–20 minutes the first time) and configures the game. Rerunning it is safe.

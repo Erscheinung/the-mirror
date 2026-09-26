@@ -4,7 +4,7 @@ Guidance for Claude Code (and humans) working on this fork of The Mirror (Mirror
 
 ## What this fork is
 
-A self-hosted, Firebase-free setup of Mirror Classic so a small group can build worlds together in real time over Tailscale. The original cloud (api.themirror.space, Firebase projects, prebuilt engine downloads) is shut down. Work happens on the `dev` branch of https://github.com/Erscheinung/the-mirror. The user-facing instructions are at the top of `README.md`.
+A self-hosted, Firebase-free setup of Mirror Classic so a small group can build worlds together in real time over Tailscale. The original cloud (api.themirror.space, Firebase projects, prebuilt engine downloads) is shut down. Work happens on the `main` branch of https://github.com/Erscheinung/the-mirror. The user-facing instructions are at the top of `README.md`.
 
 ## Repo layout
 
