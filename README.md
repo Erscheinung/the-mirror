@@ -30,7 +30,7 @@ After setup:
 | Play | `scripts/play.sh` | `scripts\play.ps1` |
 | Open the Godot editor | `scripts/play.sh --editor` | `scripts\play.ps1 -Editor` |
 
-In the game, sign up or click **Join as Guest**. Accounts live on the host's server.
+In the game, click **sign up here** once to create an account (just an email-style name and a password of 6+ characters; no email is sent). Accounts live on the host's server, and **Remember Me** keeps you signed in. **Forgot Password?** doesn't work because there's no email service.
 - **The host** creates a space and opens it. A game server for that space starts on the host's machine.
 - **Friends** then open any space. With the join role, they're connected to the space the host has open, and everyone builds in it together in real time. The **Join by IP** panel (`<host-ip>:27015`) works too.
 
