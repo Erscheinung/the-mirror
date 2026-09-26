@@ -50,6 +50,7 @@ In the game, click **sign up here** once to create an account (just an email-sty
   - Runs `scripts/setup-server.sh`, which:
     - installs MongoDB, Redis and Node 22 (Homebrew on macOS; docker/podman containers for MongoDB and Redis on Linux);
     - builds `mirror-web-server`;
+    - seeds MongoDB with the starter **Empty Space** template (`scripts/seed-db.sh`, from `mirror-web-server/database_backup/dump.archive`). **Create New Space** needs it, and it's only loaded when no template exists yet;
     - writes `mirror-web-server/.env` with freshly generated secrets for your Tailscale IP;
     - sets the **host** role.
   - `.env` is gitignored. Keep it private.

@@ -22,7 +22,6 @@ if [ "$(uname)" = "Darwin" ]; then
 	# Newer Homebrew only loads formulae from taps you trust (this is MongoDB's official tap).
 	if brew trust --help > /dev/null 2>&1; then brew trust mongodb/brew; fi
 	brew install node@22 redis mongodb/brew/mongodb-community
-	source "$ROOT/scripts/start-db.sh"
 else
 	# MongoDB isn't packaged by most distros (on Arch it's AUR-only), so run both in containers.
 	if command -v docker > /dev/null; then
@@ -38,6 +37,10 @@ else
 	$DOCKER start mirror-redis 2> /dev/null ||
 		$DOCKER run -d --name mirror-redis --restart unless-stopped -p 127.0.0.1:6379:6379 docker.io/library/redis:7
 fi
+
+# Wait for both databases, then load the starter space template if needed.
+source "$ROOT/scripts/start-db.sh"
+"$ROOT/scripts/seed-db.sh"
 
 source "$ROOT/scripts/use-node.sh"
 
