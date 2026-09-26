@@ -1,12 +1,18 @@
-import { Module, Global, DynamicModule } from '@nestjs/common'
+import { Module, Global, DynamicModule, Logger } from '@nestjs/common'
 import * as admin from 'firebase-admin'
 import { FirebaseAuthenticationService } from './firebase-authentication.service'
 import { FirebaseDatabaseService } from './firebase-database.service'
+import { LocalAuthController } from './local-auth.controller'
+import { isLocalAuth, LocalAuthenticationService } from './local-auth.service'
 
 @Global()
 @Module({})
 export class FirebaseModule {
   static initialize(): DynamicModule {
+    if (isLocalAuth()) {
+      return FirebaseModule.initializeLocal()
+    }
+
     const FirebaseProvider = {
       provide: 'FIREBASE',
       useFactory: () => {
@@ -44,6 +50,36 @@ export class FirebaseModule {
       exports: [
         FirebaseProvider,
         FirebaseAuthenticationService,
+        FirebaseDatabaseService
+      ]
+    }
+  }
+
+  /**
+   * Self-hosted auth (default): no Firebase project needed. Anything injecting
+   * FirebaseAuthenticationService gets LocalAuthenticationService instead.
+   */
+  private static initializeLocal(): DynamicModule {
+    new Logger(FirebaseModule.name).log(
+      'Using local auth (AUTH_PROVIDER is not "firebase")'
+    )
+    return {
+      module: FirebaseModule,
+      controllers: [LocalAuthController],
+      providers: [
+        LocalAuthenticationService,
+        {
+          provide: FirebaseAuthenticationService,
+          useExisting: LocalAuthenticationService
+        },
+        // The realtime database isn't used in local mode.
+        { provide: 'FIREBASE', useValue: null },
+        FirebaseDatabaseService
+      ],
+      exports: [
+        LocalAuthenticationService,
+        FirebaseAuthenticationService,
+        'FIREBASE',
         FirebaseDatabaseService
       ]
     }

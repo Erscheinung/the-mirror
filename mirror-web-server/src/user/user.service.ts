@@ -195,7 +195,10 @@ export class UserService {
       const decodedToken = await this.firebaseAuthService.verifyIdToken(token)
       const firebaseUID = decodedToken.uid
 
-      const _id = new mongo.ObjectId()
+      // Local auth issues ObjectId uids; reuse them so the token's user_id is the Mirror user _id.
+      const _id = /^[0-9a-f]{24}$/.test(firebaseUID)
+        ? new mongo.ObjectId(firebaseUID)
+        : new mongo.ObjectId()
 
       if (!decodedToken) {
         throw new NotFoundException('User not found')

@@ -182,6 +182,13 @@ func _set_config(config_json : Dictionary) -> void:
 
 
 func _check_emulating() -> void :
+	# Self-hosted auth served by mirror-web-server, so no Firebase project is needed.
+	var auth_server_url: String = ProjectSettings.get_setting("mirror/auth_server_url", "")
+	if not auth_server_url.is_empty():
+		auth_server_url = auth_server_url.trim_suffix("/")
+		_base_url = auth_server_url + "/identitytoolkit.googleapis.com/{version}/".format({ version = _API_VERSION })
+		_refresh_request_base_url = auth_server_url + "/securetoken.googleapis.com"
+		return
 	## Check emulating
 	if not Firebase.emulating:
 		_base_url = "https://identitytoolkit.googleapis.com/{version}/".format({ version = _API_VERSION })

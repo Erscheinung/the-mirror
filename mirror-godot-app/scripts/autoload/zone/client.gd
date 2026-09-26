@@ -548,6 +548,13 @@ func _join_new_server_locally(space_id: String) -> bool:
 		pid = OS.create_process(OS.get_executable_path(), arguments, true)
 		start_join_localhost()
 		return true
+	# Join a server someone else is hosting (e.g. over Tailscale) instead of asking
+	# mirror-web-server to launch one, which needs the cloud server scaler.
+	var zone_server_host: String = ProjectSettings.get_setting("mirror/zone_server_host", "")
+	if not zone_server_host.is_empty():
+		current_zone = {"_id": space_id}
+		connect_to_server(zone_server_host, ProjectSettings.get_setting("mirror/zone_server_port"))
+		return true
 	return false
 
 

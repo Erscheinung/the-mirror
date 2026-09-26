@@ -48,7 +48,12 @@ async function bootstrapMirrorWebServer() {
   /**
    * Swagger
    */
-  await SwaggerModule.loadPluginMetadata(metadata)
+  try {
+    await SwaggerModule.loadPluginMetadata(metadata)
+  } catch (error) {
+    // metadata.ts is generated and can go stale; it only affects the API docs
+    console.warn('Skipping stale Swagger plugin metadata:', error?.message)
+  }
   const config = new DocumentBuilder()
     .setTitle('Mirror Web Server')
     .setDescription('Mirror Web Server API')
