@@ -1,2 +1,3 @@
 #!/bin/bash
-curl -o "MirrorGodotEditorWindows.exe" "https://storage.googleapis.com/mirror_native_client_builds/Engine/13b5ad64/MirrorGodotEditorWindows.exe"
+# The precompiled Windows editor is no longer hosted. Build it from source in PowerShell:
+echo "powershell -ExecutionPolicy Bypass -File scripts\\build-engine-windows.ps1"

@@ -1,2 +1,3 @@
 #!/bin/bash
-curl -o "MirrorGodotEditorLinux.x86_64" "https://storage.googleapis.com/mirror_native_client_builds/Engine/13b5ad64/MirrorGodotEditorLinux.x86_64"
+# The precompiled Linux editor is no longer hosted, so build the Mirror Godot fork from source.
+"$(dirname "$0")/scripts/build-engine-linux.sh"
