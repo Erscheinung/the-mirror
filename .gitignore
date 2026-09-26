@@ -16,3 +16,6 @@ node_modules
 *.app/
 *.app.zip
 .vercel
+
+# Downloaded engine build dependencies (scripts/build-engine-mac.sh)
+.engine-deps/

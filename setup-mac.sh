@@ -1,2 +1,3 @@
 #!/bin/bash
-curl -o "MirrorGodotEditorMac.app.zip" "https://storage.googleapis.com/mirror_native_client_builds/Engine/13b5ad64/MirrorGodotEditorMac.app.zip"
+# The precompiled Mac editor is no longer hosted, so build the Mirror Godot fork from source.
+"$(dirname "$0")/scripts/build-engine-mac.sh"
